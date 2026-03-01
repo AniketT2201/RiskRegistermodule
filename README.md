@@ -12,6 +12,8 @@ Short summary on functionality and used technologies.
 
 ## Applies to
 
+test
+
 GIT hub testing -- arvind
 - [SharePoint Framework](https://aka.ms/spfx)
 - [Microsoft 365 tenant](https://docs.microsoft.com/sharepoint/dev/spfx/set-up-your-developer-tenant)
