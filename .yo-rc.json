@@ -1,0 +1,19 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "useGulp": false,
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "22.21.1",
+    "sdksVersions": {},
+    "version": "1.22.1",
+    "libraryName": "risk-register",
+    "libraryId": "e6b94f30-809d-4871-9ab7-bcf7e72d1f0a",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "RiskRegister",
+    "solutionShortDescription": "RiskRegister description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}

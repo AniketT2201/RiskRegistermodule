@@ -1,0 +1,419 @@
+import * as React from "react";
+import { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+import { Web } from "@pnp/sp/presets/all";
+import styles from "../Scrrd.module.scss";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import sonalogo from '../../assets/SonaPNGLogo.png';
+import { SPComponentLoader } from '@microsoft/sp-loader';
+SPComponentLoader.loadCss('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
+interface Props {
+  currentSPContext: any;
+}
+
+const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
+
+  const history = useHistory();
+
+  const [data, setData] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // ✅ PnP v2 web instance
+  const web = Web(props.currentSPContext.pageContext.web.absoluteUrl);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  /* ============ LOAD + MERGE TWO LISTS ============ */
+
+  //   const loadData = async () => {
+  //     try {
+
+  //       // 🔹 RiskRequest list
+  //       const risks = await web.lists
+  //         .getByTitle("RiskRequest")
+  //         .items
+  //         .select("Id", "Title", "Department", "AssetOwner", "Classification")
+  //         .orderBy("Created", false)
+  //         .get();
+
+  //       // 🔹 RiskDetails list (Risk Value here)
+  //       const details = await web.lists
+  //         .getByTitle("RiskDetails")
+  //         .items
+  //         .select("Id", "RiskNo", "Risk_x0020_Value")
+  //         .get();
+
+  //       // 🔁 Merge lists
+  //       const mergedData = risks.map(risk => {
+
+  //         const match = details.find(
+  //           d => d.RiskNo === risk.Title   // change if lookup
+  //         );
+
+  //         return {
+  //           ...risk,
+  //           RiskValue: match ? match.Risk_x0020_Value : "-"
+  //         };
+  //       });
+
+  //       setData(mergedData);
+
+  //     } catch (error) {
+  //       console.error("DASHBOARD LOAD ERROR:", error);
+  //     }
+  //   };
+
+
+  const loadData = async () => {
+    try {
+
+      // 🔹 Master list
+      const risks = await web.lists
+        .getByTitle("RiskRequest")
+        .items
+        .select(
+          "Id",
+          "Title",
+          "Department",
+          "Classification",
+          "AssetOwner/Id",
+          "AssetOwner/Title",
+          "AssetOwner/EMail"
+        )
+        .expand("AssetOwner")
+        .orderBy("Created", false)
+        .get();
+
+      // 🔹 Detail list (now using new columns)
+      const details = await web.lists
+        .getByTitle("RiskDetails")
+        .items
+        .select("Id", "RiskRequestID", "RiskValue")
+        .get();
+
+      // 🔁 Merge using Request ID (CORRECT WAY)
+      const mergedData = risks.map(risk => {
+
+        // const related = details.filter(
+        //   d => d.RiskRequestID == risk.Id
+        // );
+
+        // *************************************
+        // const related = details.filter(
+        //   d => Number(d.RiskRequestID) === Number(risk.Id)
+        // );
+
+        // New 
+        const related = details.filter(d => {
+
+          if (!d.RiskRequestID) return false; //  null protection
+        
+          const requestId =
+            typeof d.RiskRequestID === "object"
+              ? d.RiskRequestID.Id
+              : d.RiskRequestID;
+        
+          return Number(requestId) === Number(risk.Id);
+        });
+
+        // sum or take latest — here taking first
+        // const totalRisk = related.length
+        //   ? related.reduce((sum, x) => sum + Number(x.RiskValue || 0), 0)
+        //   : 0;
+
+        // New
+        const totalRisk = related.reduce(
+          (sum, x) => sum + (parseFloat(x.RiskValue) || 0),
+          0
+        );
+
+        return {
+          ...risk,
+          RiskValue: totalRisk
+        };
+      });
+      console.log("Risks:", risks);
+      console.log("Merged:", mergedData);
+
+      setData(mergedData);
+
+    } catch (error) {
+      console.error("DASHBOARD LOAD ERROR:", error);
+    }
+  };
+
+
+  /* ============ SEARCH FILTER ============ */
+
+  const filtered = data.filter(item => {
+
+    const riskNo = (item.Title || "").toString().toLowerCase();
+    const dept = (item.Department || "").toString().toLowerCase();
+    const term = search.toLowerCase();
+
+    return riskNo.includes(term) || dept.includes(term);
+  });
+
+
+  /* ============ PAGINATION LOGIC ============ */
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filtered.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  return (
+
+    <div className={`${styles.scrrd} row`}>
+      {/* <div className="col-md-2 col-sm-12">
+        <div className={styles.sidebar}>
+          <div>
+            <img src={sonalogo} className="logoimg" alt="" />
+            <h3 className="risktitle">Sona Comstar</h3>
+          </div>
+
+          <ul className={`${styles.sidebarMenu} iconmenu`}>
+            <li className={styles.active}><i className="fa fa-dashboard"></i> Department Dashboard</li>
+            <li><i className="fa fa-check-circle" aria-hidden="true"></i> HOD Approval</li>
+            <li><i className="fa fa-check-circle" aria-hidden="true"></i> ISCT Approval</li>
+          </ul>
+        </div>
+      </div> */}
+      <div className="col-md- col-sm-12">
+        <div className={styles.main}>
+
+          <div className={styles.header}>
+            <h2 className={styles.headerTitle}>
+              Risk Register Department Dashboard
+            </h2>
+
+
+          </div>
+          <div className="submainsection">
+            <div>
+              <input
+                className={styles.searchBox}
+                placeholder="Search by Risk No or Department..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+              <div className="addbtnsection">
+                <button
+                  className={styles.addBtn}
+                  onClick={() => history.push("/RiskRequestDetailsForm")}
+                >
+                  <i className="fa fa-plus" aria-hidden="true"></i> Add Risk
+                </button>
+              </div>
+            </div>
+
+
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Risk No.</th>
+                  <th>Department</th>
+                  <th>Owner</th>
+                  <th>Classification</th>
+                  <th>Risk Value</th>
+                  <th>View</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                {currentItems.map((item, i) => (
+                  <tr key={i}>
+                    <td>{item.Title}</td>
+                    <td>{item.Department}</td>
+                    {/* <td>{item.AssetOwner.Title}</td> */}
+
+                    <td>{item.AssetOwner?.Title || "-"}</td>
+                    <td>{item.Classification}</td>
+                    <td>{item.RiskValue}</td>
+                    <td
+                      style={{ cursor: "pointer" }}
+                      onClick={() => history.push(`/RiskView/${item.Id}`)}
+                    >
+                      👁
+                    </td>
+                  </tr>
+                ))}
+
+                {currentItems.length === 0 && (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: "center" }}>
+                      No records found
+                    </td>
+                  </tr>
+                )}
+
+              </tbody>
+            </table>
+
+            {/* PAGINATION */}
+
+            <div className={styles.pagination}>
+
+              <button className="pgbtn"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+              >
+                Prev
+              </button>
+
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`pgbtn ${currentPage === i + 1 ? styles.activePage : ""}`}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+                // <button 
+                //   key={i}
+                //   className={currentPage === i + 1 ? styles.activePage : ""}
+                //   onClick={() => setCurrentPage(i + 1)}
+                // >
+                //   {i + 1}
+                // </button>
+              ))}
+
+              <button
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(p => p + 1)} className="pgbtn"
+              >
+                Next
+              </button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* SIDEBAR */}
+      <div className={styles.sidebar} style={{ display: 'none' }}>
+        <div>
+          <img src={sonalogo} className="logoimg" alt="" />
+          <h3 className="risktitle">Sona Comstar</h3>
+        </div>
+
+        <ul className={`${styles.sidebarMenu} iconmenu`}>
+          <li className={styles.active}><i className="fa fa-dashboard"></i> Department Dashboard</li>
+          <li><i className="fa fa-check-circle" aria-hidden="true"></i> HOD Approval</li>
+          <li><i className="fa fa-check-circle" aria-hidden="true"></i> ISCT Approval</li>
+        </ul>
+      </div>
+
+      {/* MAIN */}
+      <div className={styles.main} style={{ display: 'none' }}>
+
+        <div className={styles.header}>
+          <h2 className={styles.headerTitle}>
+            Risk Register Department Dashboard
+          </h2>
+
+          <button
+            className={styles.addBtn}
+            onClick={() => history.push("/RiskRequestDetailsForm")}
+          >
+            Add EMD
+          </button>
+        </div>
+
+        <input
+          className={styles.searchBox}
+          placeholder="Search by Risk No or Department..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
+        />
+
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Risk No.</th>
+              <th>Department</th>
+              <th>Owner</th>
+              <th>Classification</th>
+
+              <th>View</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {currentItems.map((item, i) => (
+              <tr key={i}>
+                <td>{item.Title}</td>
+                <td>{item.Department}</td>
+                {/* <td>{item.AssetOwnerId}</td> */}
+                <td>{item.AssetOwner?.Title || "-"}</td>
+                <td>{item.Classification}</td>
+                <td>{item.RiskValue}</td>
+                <td
+                  style={{ cursor: "pointer" }}
+                  onClick={() => history.push("/RiskView", { item })}
+                >
+                  👁
+                </td>
+              </tr>
+            ))}
+
+            {currentItems.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ textAlign: "center" }}>
+                  No records found
+                </td>
+              </tr>
+            )}
+
+          </tbody>
+        </table>
+
+        {/* PAGINATION */}
+
+        <div className={styles.pagination}>
+
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => p - 1)}
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              className={currentPage === i + 1 ? styles.activePage : ""}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage(p => p + 1)}
+          >
+            Next
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default RiskRegisterDepartmentDashboard;
