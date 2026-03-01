@@ -167,7 +167,6 @@ const RiskEditForm: React.FC<Props> = ({ currentSPContext }) => {
         </div>
 
         <div className="d-flex gap-2 mt-2">
-
           <input className={styles.appInput}
             placeholder="Probability"
             value={row.Probability}
