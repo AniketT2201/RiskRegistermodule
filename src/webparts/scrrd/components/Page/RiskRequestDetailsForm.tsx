@@ -83,6 +83,9 @@ interface RiskRow {
         revisedImpact: number;
         residualRisk: number;
         residualCategory: string;
+
+        ownerAcceptanceId?: number;
+        ownerAcceptanceName?: string;
         ownerAcceptance: string;
         dataRetention: string;
         isoControls: string;
@@ -157,9 +160,9 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
     const [assetOwnerId, setAssetOwnerId] = useState<number | null>(null);
     const [assetOwnerEmail, setAssetOwnerEmail] = useState("");
 
-    const [ownerAcceptanceId, setOwnerAcceptanceId] = useState<number | null>(null);
-    const [ownerAcceptanceName, setOwnerAcceptanceName] = useState("");
-    const [ownerAcceptanceEmail, setOwnerAcceptanceEmail] = useState("");
+    // const [ownerAcceptanceId, setOwnerAcceptanceId] = useState<number | null>(null);
+    // const [ownerAcceptanceName, setOwnerAcceptanceName] = useState("");
+    // const [ownerAcceptanceEmail, setOwnerAcceptanceEmail] = useState("");
 
 
 
@@ -268,38 +271,84 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
 
+    // const addToHistory = (i: number) => {
+    //     const copy = [...rows];
+    //     const r: any = copy[i];
+
+    //     if (!r.history) r.history = [];
+
+    //     // ✔ Add to history
+    //     r.history.push({
+    //         revisedC: r.revisedC || 0,
+    //         revisedI: r.revisedI || 0,
+    //         revisedA: r.revisedA || 0,
+    //         revisedProbability: r.revisedProbability || 0,
+    //         revisedImpact: r.revisedImpact || 0,
+    //         residualRisk: r.residualRisk || 0,
+    //         residualCategory: r.residualCategory || "",
+    //         ownerAcceptance: r.ownerAcceptanceName || "",
+    //         dataRetention: r.dataRetention || "",
+    //         isoControls: r.isoControls || "",
+    //         date: new Date().toLocaleString()
+    //     });
+
+    //     // 🔥 CLEAR ONLY REVISED RISK SECTION
+    //     copy[i] = {
+    //         ...r,
+    //         revisedC: "",
+    //         revisedI: "",
+    //         revisedA: "",
+    //         revisedProbability: "",
+    //         revisedImpact: "",
+    //         residualRisk: 0,
+    //         residualCategory: "",
+    //         ownerAcceptance: "",
+    //         dataRetention: "",
+    //         isoControls: ""
+    //     };
+
+    //     setRows(copy);
+    // };
+
+
+
     const addToHistory = (i: number) => {
+
         const copy = [...rows];
         const r: any = copy[i];
 
         if (!r.history) r.history = [];
 
-        // ✔ Add to history
         r.history.push({
             revisedC: r.revisedC || 0,
             revisedI: r.revisedI || 0,
             revisedA: r.revisedA || 0,
+            revisedCIA: r.revisedCIA || 0,
             revisedProbability: r.revisedProbability || 0,
             revisedImpact: r.revisedImpact || 0,
             residualRisk: r.residualRisk || 0,
             residualCategory: r.residualCategory || "",
-            ownerAcceptance: r.ownerAcceptanceName || "",
+            ownerAcceptanceId: r.ownerAcceptanceId || null,
+            ownerAcceptanceName: r.ownerAcceptanceName || "",
             dataRetention: r.dataRetention || "",
             isoControls: r.isoControls || "",
             date: new Date().toLocaleString()
         });
 
-        // 🔥 CLEAR ONLY REVISED RISK SECTION
+        // 🔥 RESET SECTION PROPERLY
         copy[i] = {
             ...r,
-            revisedC: "",
-            revisedI: "",
-            revisedA: "",
-            revisedProbability: "",
-            revisedImpact: "",
+            revisedC: undefined,
+            revisedI: undefined,
+            revisedA: undefined,
+            revisedProbability: undefined,
+            revisedImpact: undefined,
+            revisedCIA: 0,
             residualRisk: 0,
             residualCategory: "",
-            ownerAcceptance: "",
+            ownerAcceptanceId: null,
+            ownerAcceptanceName: "",
+            ownerAcceptanceEmail: "",
             dataRetention: "",
             isoControls: ""
         };
@@ -372,47 +421,108 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
 
+    //     const savePopupChanges = async () => {
+
+    //         if (selectedRowIndex === null) return;
+
+    //         const r = rows[selectedRowIndex];
+    //         if (r.history.length > 0) {
+    //             for (var j = 0; j < r.history.length; j++) {
+
+    //         const data = {
+
+    //             Title: "RTP_" + Date.now(),
+
+    //             //   RiskRequestID: requestId?.toString() || "",
+
+    //             Vulnerability: r.vulnerability || "",
+    //             ExistingControls: r.existingControls || "",
+
+    //             RevisedC: r.history[j].c != null ? String(r.c) : null,
+    //             RevisedI: r.history[j].i != null ? String(r.i) : null,
+    //             RevisedA: r.history[j].a != null ? String(r.a) : null,
+    //             RevisedCIAScore: r.history[j].revisedCIA != null ? String(r.history[j].revisedCIA) : null,
+    //             RevisedProbability: r.history[j].probability != null ? String(r.history[j].probability) : null,
+    //             RevisedImpact: r.history[j].impact != null ? String(r.impact) : null,
+    //             ResidualRisk: r.history[j].residualRisk != null ? String(r.history[j].residualRisk) : null,
+
+    //             ResidualRiskCategory: r.history[j].residualCategory || null,
+
+    //             //RiskOwnerAcceptanceId: r.history[j].ownerAcceptanceId ?? null,
+
+    //             DataRetention: r.history[j].dataRetention || null,
+    //             ISOApplicableControls: r.history[j].isoControls || null
+
+    //         }
+    //         try {
+
+    //             await web.lists
+    //                 .getByTitle("RTPDetails")
+    //                 .items.add(data
+
+    //                 );
+
+    //             alert("RTP Saved Successfully");
+    //             setShowModal(false);
+
+    //         } catch (error) {
+    //             console.log(error);
+    //             alert("Error Saving RTP");
+    //         }
+    //     }
+    // }
+    //     };
+
+
     const savePopupChanges = async () => {
 
         if (selectedRowIndex === null) return;
 
         const r = rows[selectedRowIndex];
 
+        if (!r.history || r.history.length === 0) {
+            alert("No revised history to save");
+            return;
+        }
+
         try {
 
-            await web.lists
-                .getByTitle("RTPDetails")
-                .items.add({
+            // 🔥 LOOP THROUGH ALL HISTORY ROWS
+            for (const h of r.history) {
 
-                    Title: "RTP_" + Date.now(),
+                await web.lists
+                    .getByTitle("RTPDetails")
+                    .items.add({
 
-                    //   RiskRequestID: requestId?.toString() || "",
+                        Title: "RTP_" + Date.now(),
+                        Vulnerability: r.vulnerability || null,
+                        ExistingControls: r.existingControls || null,
 
-                    Vulnerability: r.vulnerability || "",
-                    ExistingControls: r.existingControls || "",
 
-                    RevisedC: r.revisedC != null ? String(r.revisedC) : null,
-                    RevisedI: r.revisedI != null ? String(r.revisedI) : null,
-                    RevisedA: r.revisedA != null ? String(r.revisedA) : null,
-                    RevisedCIAScore: r.revisedCIA != null ? String(r.revisedCIA) : null,
-                    RevisedProbability: r.revisedProbability != null ? String(r.revisedProbability) : null,
-                    RevisedImpact: r.revisedImpact != null ? String(r.revisedImpact) : null,
-                    ResidualRisk: r.residualRisk != null ? String(r.residualRisk) : null,
+                        RevisedC: h.revisedC?.toString() || null,
+                        RevisedI: h.revisedI?.toString() || null,
+                        RevisedA: h.revisedA?.toString() || null,
+                        RevisedCIAScore: h.revisedCIA?.toString() || null,
+                        RevisedProbability: h.revisedProbability?.toString() || null,
+                        RevisedImpact: h.revisedImpact?.toString() || null,
+                        ResidualRisk: h.residualRisk?.toString() || null,
 
-                    ResidualRiskCategory: r.residualCategory || null,
+                        ResidualRiskCategory: h.residualCategory || null,
 
-                    //   RiskOwnerAcceptaId: r.ownerAcceptanceId ?? null,
+                        DataRetention: h.dataRetention || null,
 
-                    DataRetention: r.dataRetention || null,
-                    ISOApplicableControls: r.isoControls || null
+                        ISOApplicableControls: h.isoControls || null,
 
-                });
+                        // 🔥 Person column save
+                        RiskOwnerAcceptanceId: r.riskOwnerId ? r.riskOwnerId : null
+                    });
+            }
 
-            alert("RTP Saved Successfully");
+            alert("All Revised History Saved Successfully");
             setShowModal(false);
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
             alert("Error Saving RTP");
         }
     };
@@ -528,6 +638,12 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
     // ✅ PASTE HERE
     const submitRiskRequest = async () => {
+
+
+        if (!department || !asset || !assetOwnerId) {
+            alert("Please fill all mandatory fields");
+            return;
+        }
         try {
 
             // ===== SAVE MASTER =====
@@ -625,11 +741,15 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
             <div className="plr-10">
                 <div className="row pb-10">
                     <div className="col-md-4 col-sm-12">
-                        <label>Department / Process*</label>
+                        <label>
+                            Department / Process <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input className="form-control" value={department} onChange={e => setDepartment(e.target.value)} />
                     </div>
                     <div className="col-md-4 col-sm-12">
-                        <label>Information Asset / Activity*</label>
+                        <label>
+                            Information Asset / Activity <span style={{ color: "red" }}>*</span>
+                        </label>
                         <textarea className="form-control" value={asset} onChange={e => setAsset(e.target.value)} />
                     </div>
                     {/* <div className="col-md-4 col-sm-12">
@@ -639,7 +759,9 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
                     <div className="col-md-4 col-sm-12">
-                        <label>Asset Owner</label>
+                        <label>
+                            Information Asset Owner <span style={{ color: "red" }}>*</span>
+                        </label>
 
                         <PeoplePicker
                             context={peoplePickerContext}
@@ -953,9 +1075,58 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
 
-                                    {/* ===== Risk Action Table (below exposure) ===== */} <div className="row mt-3"> <div className="col-md-4 col-sm-12"> <label>Risk Owner</label> <PeoplePicker context={peoplePickerContext} personSelectionLimit={1} principalTypes={[PrincipalType.User]} ensureUser defaultSelectedUsers={rows[selectedRowIndex]?.riskOwnerEmail ? [rows[selectedRowIndex].riskOwnerEmail] : []} onChange={async (items) => { if (items.length === 0) return; const user = await sp.web.ensureUser(items[0].secondaryText); updateRevised(selectedRowIndex, "riskOwnerId", user.data.Id); updateRevised(selectedRowIndex, "riskOwnerName", items[0].text); updateRevised(selectedRowIndex, "riskOwnerEmail", items[0].secondaryText); }} /> </div> <div className="col-md-8 col-sm-12"> <label>Risk Treatment Plan</label> <textarea className="form-control" rows={3} value={rows[selectedRowIndex].riskTreatmentPlan || ""} onChange={e => updateRevised(selectedRowIndex, "riskTreatmentPlan", e.target.value)} /> </div> </div>
+                                    {/* ===== Risk Action Table (below exposure) ===== */}
+                                    <div className="row mt-3">
 
-                                    people picker
+                                        {/* Risk Owner */}
+                                        <div className="col-md-4 col-sm-12">
+                                            <label>Risk Owner</label>
+
+                                            <PeoplePicker
+                                                context={peoplePickerContext}
+                                                personSelectionLimit={1}
+                                                principalTypes={[PrincipalType.User]}
+                                                ensureUser
+                                                defaultSelectedUsers={
+                                                    rows[selectedRowIndex]?.riskOwnerEmail
+                                                        ? [rows[selectedRowIndex].riskOwnerEmail]
+                                                        : []
+                                                }
+                                                onChange={async (items) => {
+
+                                                    if (items.length === 0) return;
+
+                                                    const user = await sp.web.ensureUser(items[0].secondaryText);
+
+                                                    updateRevised(selectedRowIndex, "riskOwnerId", user.data.Id);
+                                                    updateRevised(selectedRowIndex, "riskOwnerName", items[0].text);
+                                                    updateRevised(selectedRowIndex, "riskOwnerEmail", items[0].secondaryText);
+
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* Risk Treatment Plan */}
+                                        <div className="col-md-8 col-sm-12">
+                                            <label>Risk Treatment Plan</label>
+
+                                            <textarea
+                                                className="form-control"
+                                                rows={3}
+                                                value={rows[selectedRowIndex].riskTreatmentPlan || ""}
+                                                onChange={(e) =>
+                                                    updateRevised(
+                                                        selectedRowIndex,
+                                                        "riskTreatmentPlan",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
+
+                                        </div>
+
+                                    </div>
+
 
                                     <div className="row mt-2">
 
@@ -1112,9 +1283,12 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <input className="form-control"
-                                                            //value={rows[selectedRowIndex].residualCategory || ""}
-                                                            onChange={e => updateRevised(selectedRowIndex, "residualCategory", e.target.value)}
+                                                        <input
+                                                            className="form-control"
+                                                            value={rows[selectedRowIndex].residualCategory || ""}
+                                                            onChange={e =>
+                                                                updateRevised(selectedRowIndex, "residualCategory", e.target.value)
+                                                            }
                                                         />
                                                     </td>
                                                     <td>
@@ -1128,7 +1302,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                                         <div className="col-md-4 col-sm-12">
                                                             {/* <label>Owner Acceptance</label> */}
 
-                                                            <PeoplePicker
+                                                            {/* <PeoplePicker
                                                                 context={peoplePickerContext}
                                                                 personSelectionLimit={1}
                                                                 principalTypes={[PrincipalType.User]}
@@ -1153,17 +1327,55 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                                                     setOwnerAcceptanceEmail(email);
 
                                                                 }}
+                                                            /> */}
+
+
+
+                                                            <PeoplePicker
+                                                                context={peoplePickerContext}
+                                                                personSelectionLimit={1}
+                                                                principalTypes={[PrincipalType.User]}
+                                                                ensureUser
+                                                                defaultSelectedUsers={
+                                                                    rows[selectedRowIndex]?.ownerAcceptanceEmail
+                                                                        ? [rows[selectedRowIndex].ownerAcceptanceEmail]
+                                                                        : []
+                                                                }
+                                                                onChange={async (items) => {
+
+                                                                    if (!items.length) {
+                                                                        updateRevised(selectedRowIndex, "ownerAcceptanceId", null);
+                                                                        updateRevised(selectedRowIndex, "ownerAcceptanceName", "");
+                                                                        updateRevised(selectedRowIndex, "ownerAcceptanceEmail", "");
+                                                                        return;
+                                                                    }
+
+                                                                    const email = items[0].secondaryText;
+                                                                    const user = await sp.web.ensureUser(email);
+
+                                                                    updateRevised(selectedRowIndex, "ownerAcceptanceId", user.data.Id);
+                                                                    updateRevised(selectedRowIndex, "ownerAcceptanceName", items[0].text);
+                                                                    updateRevised(selectedRowIndex, "ownerAcceptanceEmail", email);
+                                                                }}
                                                             />
 
-                                                        </div>                                            </td>
+                                                        </div>
+
+
+
+                                                    </td>
                                                     <td>
-                                                        <input className="form-control"
-                                                            onChange={e => updateRevised(selectedRowIndex, "dataRetention", e.target.value)}
+                                                        <input
+                                                            className="form-control"
+                                                            value={rows[selectedRowIndex].dataRetention || ""}
+                                                            onChange={e =>
+                                                                updateRevised(selectedRowIndex, "dataRetention", e.target.value)
+                                                            }
                                                         />
                                                     </td>
                                                     <td>
                                                         <input className="form-control"
-                                                            //value={rows[selectedRowIndex].isoControls || ""}
+                                                            value={rows[selectedRowIndex].isoControls || ""}
                                                             onChange={e => updateRevised(selectedRowIndex, "isoControls", e.target.value)}
                                                         />
                                                     </td>
@@ -1219,7 +1431,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                                                 <td>{h.revisedImpact}</td>
                                                                 <td>{h.residualRisk}</td>
                                                                 <td>{h.residualCategory}</td>
-                                                                <td>{h.ownerAcceptance}</td>
+                                                                <td>{h.ownerAcceptanceName}</td>
                                                                 <td>{h.dataRetention}</td>
                                                                 <td>{h.isoControls}</td>
                                                                 <td>{h.date}</td>

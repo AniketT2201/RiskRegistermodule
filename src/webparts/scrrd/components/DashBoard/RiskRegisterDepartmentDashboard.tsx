@@ -19,6 +19,10 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
   const [data, setData] = useState<any[]>([]);
   const [search, setSearch] = useState("");
 
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -29,46 +33,6 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
   useEffect(() => {
     loadData();
   }, []);
-
-  /* ============ LOAD + MERGE TWO LISTS ============ */
-
-  //   const loadData = async () => {
-  //     try {
-
-  //       // 🔹 RiskRequest list
-  //       const risks = await web.lists
-  //         .getByTitle("RiskRequest")
-  //         .items
-  //         .select("Id", "Title", "Department", "AssetOwner", "Classification")
-  //         .orderBy("Created", false)
-  //         .get();
-
-  //       // 🔹 RiskDetails list (Risk Value here)
-  //       const details = await web.lists
-  //         .getByTitle("RiskDetails")
-  //         .items
-  //         .select("Id", "RiskNo", "Risk_x0020_Value")
-  //         .get();
-
-  //       // 🔁 Merge lists
-  //       const mergedData = risks.map(risk => {
-
-  //         const match = details.find(
-  //           d => d.RiskNo === risk.Title   // change if lookup
-  //         );
-
-  //         return {
-  //           ...risk,
-  //           RiskValue: match ? match.Risk_x0020_Value : "-"
-  //         };
-  //       });
-
-  //       setData(mergedData);
-
-  //     } catch (error) {
-  //       console.error("DASHBOARD LOAD ERROR:", error);
-  //     }
-  //   };
 
 
   const loadData = async () => {
@@ -101,16 +65,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
       // 🔁 Merge using Request ID (CORRECT WAY)
       const mergedData = risks.map(risk => {
 
-        // const related = details.filter(
-        //   d => d.RiskRequestID == risk.Id
-        // );
 
-        // *************************************
-        // const related = details.filter(
-        //   d => Number(d.RiskRequestID) === Number(risk.Id)
-        // );
-
-        // New 
         const related = details.filter(d => {
 
           if (!d.RiskRequestID) return false; //  null protection
@@ -169,6 +124,9 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
   const currentItems = filtered.slice(indexOfFirstItem, indexOfLastItem);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+
+
 
   return (
 
@@ -370,6 +328,9 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
               </tr>
             ))}
 
+
+            
+
             {currentItems.length === 0 && (
               <tr>
                 <td colSpan={6} style={{ textAlign: "center" }}>
@@ -415,5 +376,11 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
     </div>
   );
 };
+
+
+
+
+
+
 
 export default RiskRegisterDepartmentDashboard;
