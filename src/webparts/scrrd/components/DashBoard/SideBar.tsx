@@ -4,7 +4,7 @@ import '../../components/Page/Sidebar.scss';
 import { IScrrdProps } from '../IScrrdProps';
 import logo from "../../assets/SonaPNGLogo.png";
 
-const Sidebar = (props: IScrrdProps) => {
+const Sidebar: React.FC<IScrrdProps> = (props) => {
     const location = useLocation();
 
     return (
@@ -28,10 +28,10 @@ const Sidebar = (props: IScrrdProps) => {
 
                 <li className="nav-item">
                     <Link
-                        to="/hod-approval"
-                        className={`nav-link ${location.pathname === "/hod-approval" ? "active" : ""}`}
+                        to="/ViewDashBoard"
+                        className={`nav-link ${location.pathname === "/ViewDashBoard" ? "active" : ""}`}
                     >
-                        HOD Approval
+                        View DashBoard
                     </Link>
                 </li>
 

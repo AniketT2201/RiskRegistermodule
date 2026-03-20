@@ -3,13 +3,19 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { Web } from "@pnp/sp/presets/all";
 import "@pnp/sp/profiles";
+import { Dropdown, IDropdownOption } from "@fluentui/react";
 // import { sp } from "@pnp/sp/presets/all";
 import { useHistory } from "react-router-dom";
+import type { IScrrdProps } from "../IScrrdProps";
 import styles from "../Scrrd.module.scss";
 import { SPComponentLoader } from '@microsoft/sp-loader';
 import { PeoplePicker, PrincipalType, IPeoplePickerContext }
     from "@pnp/spfx-controls-react/lib/PeoplePicker";
 import { sp } from "@pnp/sp";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+
+import DepartmentOps from "../../components/Service/BAL/Department";
+import { IDepartment } from "../../components/Service/INTERFACE/IDepartment";
 
 // import { IPeoplePickerContext } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 
@@ -20,9 +26,9 @@ import { sp } from "@pnp/sp";
 
 
 SPComponentLoader.loadCss('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
-interface Props {
-    currentSPContext: any;
-}
+// interface Props {
+//   currentSPContext: WebPartContext;
+// }
 //this is old one
 // interface RiskRow {
 //     vulnerability: string;
@@ -133,7 +139,10 @@ interface RiskRow {
 //====================end my code========================
 
 
-const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
+export const RiskRequestDetailsForm: React.FC<IScrrdProps> = (props) => {
+
+
+    const { currentSPContext } = props;
 
     const history = useHistory();
     const web = Web(currentSPContext.pageContext.web.absoluteUrl);
@@ -157,8 +166,8 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
 
-    const [assetOwnerId, setAssetOwnerId] = useState<number | null>(null);
-    const [assetOwnerEmail, setAssetOwnerEmail] = useState("");
+    const [assetOwnerIds, setAssetOwnerIds] = useState<number[]>([]);
+    const [assetOwnerEmails, setAssetOwnerEmails] = useState<string[]>([]);
 
     // const [ownerAcceptanceId, setOwnerAcceptanceId] = useState<number | null>(null);
     // const [ownerAcceptanceName, setOwnerAcceptanceName] = useState("");
@@ -169,6 +178,13 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
     const [editIndex, setEditIndex] = useState<number | null>(null);
 
     const [department, setDepartment] = useState<string>("");
+
+
+    // ------------------------------------------- Department part ---------------------------------------
+
+    const [DepartmentItems, setDepartmentItems] = React.useState<IDepartment[]>();
+    const [DepartmentOptions, setDepartmentOptions] = React.useState<IDropdownOption[]>([]);
+    const [selectedDepartment, setSelectedDepartment] = React.useState<string | number>();
 
 
     const [existingControlInput, setExistingControlInput] = useState("");
@@ -188,20 +204,41 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
         infoType: [] as string[]
     });
 
+
+
+
     useEffect(() => {
-        void loadUserInfo();
-        void loadChoices();
-        void loadRiskResponses();
+        loadUserInfo();
+        loadChoices();
+        loadRiskResponses();
+    }, []);
+
+
+    useEffect(() => {
+
+        sp.setup({
+            spfxContext: currentSPContext
+        });
+
+    }, []);
+
+    useEffect(() => {
+        DepartmentOps().getTopDepartment("Id,Title,Status", "",
+            "Status eq 'Active'", { column: 'Created', isAscending: false }, 5000, props)
+            .then(results => {
+                setDepartmentItems(results);
+                const options = results.map((item) => ({
+                    key: item.Id,
+                    text: item.Title
+                }));
+                setDepartmentOptions(options);
+            });
     }, []);
 
 
 
     // now code for people picker 
 
-
-    useEffect(() => {
-        sp.setup({ spfxContext: currentSPContext as any });
-    }, []);
 
     //add by today==================
 
@@ -332,7 +369,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
             ownerAcceptanceName: r.ownerAcceptanceName || "",
             dataRetention: r.dataRetention || "",
             isoControls: r.isoControls || "",
-            date: new Date().toLocaleString()
+            date: new Date().toLocaleDateString()
         });
 
         // 🔥 RESET SECTION PROPERLY
@@ -514,7 +551,8 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                         ISOApplicableControls: h.isoControls || null,
 
                         // 🔥 Person column save
-                        RiskOwnerAcceptanceId: r.riskOwnerId ? r.riskOwnerId : null
+                        // RiskOwnerAcceptanceId: r.riskOwnerId ? r.riskOwnerId : null
+                        RiskOwnerAcceptanceId: h.ownerAcceptanceId ? h.ownerAcceptanceId : null
                     });
             }
 
@@ -563,7 +601,13 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                 }
             ]);
         }
-
+        // 🔥 CLEAR FORM FIELDS
+        // setAsset("");
+        // setAssetOwnerId(null);
+        // setAssetOwnerEmail("");
+        // setClassification("");
+        // setSharing("");
+        // setInfoType("");
         setRiskDesc("");
         setExistingControlInput("");
         setVulnerability("");
@@ -640,8 +684,18 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
     const submitRiskRequest = async () => {
 
 
-        if (!department || !asset || !assetOwnerId) {
-            alert("Please fill all mandatory fields");
+        if (!selectedDepartment) {
+            alert("Please select Department / Process");
+            return;
+        }
+
+        if (!asset.trim()) {
+            alert("Please enter Information Asset / Activity");
+            return;
+        }
+
+        if (assetOwnerIds.length === 0) {
+            alert("Please select Information Asset Owner");
             return;
         }
         try {
@@ -651,9 +705,9 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                 .getByTitle("RiskRequest")
                 .items.add({
 
-                    Department: department,
+                    DepartmentIDId: selectedDepartment,
                     InformationAsset: asset,
-                    AssetOwnerId: assetOwnerId,
+                    AssetOwnerId: { results: assetOwnerIds },
                     Classification: classification,
                     Sharing: sharing,
                     InformationType: infoType,
@@ -683,6 +737,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
                     RiskRequestID: requestId.toString(),
+                    DepartmentId: selectedDepartment,  // lookup save
 
                     RiskDescription: r.riskDescription,
                     ExistingControls: r.existingControls,
@@ -699,7 +754,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                     RiskValue: r.riskValue.toString(),
 
                     RiskResponse: r.response,
-                    Vulnerability: vulnerability,
+                    Vulnerability: r.vulnerability,
 
                     // ✅ PEOPLE PICKER SAVE
                     RiskOwnerId: r.riskOwnerId || null,
@@ -720,7 +775,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
 
 
-            alert("Saved successfully!");
+            alert("Request submitted successfully!");
             history.push("/");
 
         } catch (err) {
@@ -744,7 +799,13 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                         <label>
                             Department / Process <span style={{ color: "red" }}>*</span>
                         </label>
-                        <input className="form-control" value={department} onChange={e => setDepartment(e.target.value)} />
+
+                        <Dropdown
+                            options={DepartmentOptions}
+                            selectedKey={selectedDepartment}
+                            // onChange={(e, option) => setSelectedDepartment(option?.key)} // key = Id
+                            onChange={(e, option) => setSelectedDepartment(option?.key as number)}
+                        />
                     </div>
                     <div className="col-md-4 col-sm-12">
                         <label>
@@ -763,26 +824,35 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                             Information Asset Owner <span style={{ color: "red" }}>*</span>
                         </label>
 
-                        <PeoplePicker
-                            context={peoplePickerContext}
-                            personSelectionLimit={1}
-                            principalTypes={[PrincipalType.User]}
-                            ensureUser
-                            defaultSelectedUsers={assetOwnerEmail ? [assetOwnerEmail] : []}
-                            onChange={async (items) => {
-                                if (!items.length) {
-                                    setAssetOwnerId(null);
-                                    setAssetOwnerEmail("");
-                                    return;
-                                }
+                       <PeoplePicker
+    context={peoplePickerContext}
+    personSelectionLimit={5}
+    principalTypes={[PrincipalType.User]}
+    ensureUser
+    defaultSelectedUsers={assetOwnerEmails}
+    onChange={async (items) => {
 
-                                const email = items[0].secondaryText;
-                                const user = await sp.web.ensureUser(email);
+        if (!items.length) {
+            setAssetOwnerIds([]);
+            setAssetOwnerEmails([]);
+            return;
+        }
 
-                                setAssetOwnerId(user.data.Id);
-                                setAssetOwnerEmail(email);
-                            }}
-                        />
+        const ids: number[] = [];
+        const emails: string[] = [];
+
+        for (const item of items) {
+            const email = item.secondaryText;
+            const user = await sp.web.ensureUser(email);
+
+            ids.push(user.data.Id);
+            emails.push(email);
+        }
+
+        setAssetOwnerIds(ids);
+        setAssetOwnerEmails(emails);
+    }}
+/>
 
                     </div>
                 </div>
@@ -879,7 +949,6 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                     {/* ✅ ONLY RISK DESCRIPTION */}
                                     {/* <td>{r.riskDescription}</td> */}
 
-
                                     <td>
                                         <textarea
                                             className="form-control exitcontrolbox"
@@ -888,20 +957,20 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                         />
                                     </td>
 
-                                    {/* ✅ BLANK CONTROLS (editable) */}
                                     <td>
-                                        <textarea className="form-control exitcontrolbox"
+                                        <textarea
+                                            className="form-control exitcontrolbox"
                                             value={r.riskDescription}
-                                            onChange={e => updateRow(i, "existingControls", e.target.value)}
+                                            onChange={e => updateRow(i, "riskDescription", e.target.value)}
                                         />
-
                                     </td>
+
                                     <td>
-                                        <textarea className="form-control exitcontrolbox"
+                                        <textarea
+                                            className="form-control exitcontrolbox"
                                             value={r.existingControls}
                                             onChange={e => updateRow(i, "existingControls", e.target.value)}
                                         />
-
                                     </td>
 
                                     {/* ✅ MANUAL TYPE FIELDS (NO DROPDOWN LOOK) */}
@@ -1176,19 +1245,6 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
 
                                     </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
                                     {/* ================= REVISED RISK ================= */}
 
                                     <div className="popupSectionTitle">Revised Risk</div>
@@ -1375,6 +1431,7 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                                                     </td>
                                                     <td>
                                                         <input className="form-control"
+
                                                             value={rows[selectedRowIndex].isoControls || ""}
                                                             onChange={e => updateRevised(selectedRowIndex, "isoControls", e.target.value)}
                                                         />
@@ -1464,14 +1521,6 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
                         </div>
                     )}
 
-
-
-
-
-
-
-
-
                 </div>
                 <div className="row pl-13">
                     <div style={{ marginTop: 20 }} className="row">
@@ -1493,4 +1542,3 @@ const RiskRequestDetailsForm: React.FC<Props> = ({ currentSPContext }) => {
     );
 };
 
-export default RiskRequestDetailsForm;

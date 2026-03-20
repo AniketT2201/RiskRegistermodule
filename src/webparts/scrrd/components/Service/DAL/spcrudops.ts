@@ -234,6 +234,28 @@ export interface ISPCRUDOPS {
 }
 
 class SPCRUDOPSImpl implements ISPCRUDOPS {
+    // async getData(listName: string, columnsToRetrieve: string, columnsToExpand: string, filters: string, orderby: { column: string, isAscending: boolean }, props: IScrrdProps): Promise<any> {
+    //     if (!props.currentSPContext || !props.currentSPContext.pageContext) {
+    //         throw new Error('SharePoint context is not available');
+    //     }
+    //     const web = Web(props.currentSPContext.pageContext.web.absoluteUrl);
+    //     let items = web.lists.getByTitle(listName).items;
+    //     if (columnsToRetrieve) {
+    //         items = items.select(columnsToRetrieve);
+    //     }
+    //     if (columnsToExpand) {
+    //         items = items.expand(columnsToExpand);
+    //     }
+    //     if (filters) {
+    //         items = items.filter(filters);
+    //     }
+    //     if (orderby) {
+    //         items = items.orderBy(orderby.column, orderby.isAscending);
+    //     }
+    //     return await items.getAll();
+    // }
+
+
     async getData(listName: string, columnsToRetrieve: string, columnsToExpand: string, filters: string, orderby: { column: string, isAscending: boolean }, props: IScrrdProps): Promise<any> {
         if (!props.currentSPContext || !props.currentSPContext.pageContext) {
             throw new Error('SharePoint context is not available');

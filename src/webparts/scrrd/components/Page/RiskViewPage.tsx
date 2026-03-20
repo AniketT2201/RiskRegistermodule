@@ -2,9 +2,58 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { Web } from "@pnp/sp/presets/all";
+import { WebPartContext } from "@microsoft/sp-webpart-base";
+
+
+
+interface IMaster {
+  Id: number;
+  Title: string;
+  DepartmentID?: { Title: string };
+  AssetOwner?: { Title: string };
+  Classification?: string;
+  InformationAsset?: string;
+  Sharing?: string;
+  InformationType?: string;
+}
+
+interface IDetails {
+  Vulnerability?: string;
+  RiskDescription?: string;
+  ExistingControls?: string;
+  Confidentiality?: number;
+  Integrity?: number;
+  Availability?: number;
+  CIAMultipliedValue?: number;
+  Probability?: number;
+  Impact?: number;
+  RiskValue?: number;
+  RiskResponse?: string;
+  Timeline?: string;
+  RTPDetails?: string;
+  RiskOwner?: { Title: string };
+  Responsibility?: { Title: string };
+}
+
+interface IRTP {
+  RiskRequestID?: number;
+  RevisedC?: number;
+  RevisedI?: number;
+  RevisedA?: number;
+  RevisedProbability?: number;
+  RevisedImpact?: number;
+  ResidualRisk?: number;
+  ResidualRiskCategory?: string;
+  DataRetention?: string;
+  ISOApplicableControls?: string;
+  RiskOwnerAcceptance?: { Title: string };
+  Created?: string;
+}
+
+
 
 interface Props {
-  currentSPContext: any;
+  currentSPContext: WebPartContext;
 }
 
 const RiskViewPage: React.FC<Props> = (props) => {
@@ -14,16 +63,16 @@ const RiskViewPage: React.FC<Props> = (props) => {
 
   const web = Web(props.currentSPContext.pageContext.web.absoluteUrl);
 
-  const [master, setMaster] = useState<any>(null);
-  const [details, setDetails] = useState<any[]>([]);
-  const [rtpDetails, setRtpDetails] = useState<any[]>([]);
+  const [master, setMaster] = useState<IMaster | null>(null);
+  const [details, setDetails] = useState<IDetails[]>([]);
+  const [rtpDetails, setRtpDetails] = useState<IRTP[]>([]);
 
 
   const [showModal, setShowModal] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
 
-  const exposureColor = (v: number) => {
+  const exposureColor = (v: number): string => {
     if (v >= 163) return "#ff0000";   // High Risk
     if (v >= 82) return "#ffc000";    // Medium Risk
     if (v >= 1) return "#00b050";     // Low Risk
@@ -60,7 +109,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
   //   }
   // };
 
-  const loadData = async () => {
+  const loadData = async (): Promise<void> => {
     try {
 
       // MASTER
@@ -71,15 +120,16 @@ const RiskViewPage: React.FC<Props> = (props) => {
         .select(
           "Id",
           "Title",
-          "Department",
+          "DepartmentID/Id", "DepartmentID/Title",
           "Classification",
           "InformationAsset",
           "Sharing",
           "InformationType",
           "AssetOwner/Title"
         )
-        .expand("AssetOwner")
+        .expand("DepartmentID", "AssetOwner")
         .get();
+      console.log(req);
 
       // RISK DETAILS
       const det = await web.lists
@@ -107,55 +157,35 @@ const RiskViewPage: React.FC<Props> = (props) => {
         .expand("RiskOwner", "Responsibility")
         .get();
 
-      // RTP DETAILS (REVISED RISK)
-      // const rtp = await web.lists
-      //   .getByTitle("RTPDetails")
-      //   .items
-      //   .filter(`RiskRequestID eq ${id}`)
-      //   .select(
-      //     "RevisedC",
-      //     "RevisedI",
-      //     "RevisedA",
-      //     "RevisedProbability",
-      //     "RevisedImpact",
-      //     "ResidualRisk",
-      //     "ResidualRiskCategory",
-      //     "DataRetention",
-      //     "ISOApplicableControls",
-
-
-      //     "RiskOwnerAcceptance/Title",
-      //     "Created"
-      //   )
-      //   .expand("RiskOwnerAcceptance")
-      //   .orderBy("Created", false)
-      //   .get();
 
 
       const rtp = await web.lists
-      .getByTitle("RTPDetails")
-      .items
-      .select(
-        "Id",
-        "RevisedC",
-        "RevisedI",
-        "RevisedA",
-        "RevisedProbability",
-        "RevisedImpact",
-        "ResidualRisk",
-        "ResidualRiskCategory",
-        "DataRetention",
-        "ISOApplicableControls",
-        "RiskOwnerAcceptance/Title",
-        "Created"
-      )
-      .expand("RiskOwnerAcceptance")
-      .orderBy("Created", false)
-      .get();
+        .getByTitle("RTPDetails")
+        .items
+        .select(
+          "Id",
+          "RevisedC",
+          "RevisedI",
+          "RevisedA",
+          "RevisedProbability",
+          "RevisedImpact",
+          "ResidualRisk",
+          "ResidualRiskCategory",
+          "DataRetention",
+          "ISOApplicableControls",
+          "RiskOwnerAcceptance/Title",
+          "Created"
+        )
+        .expand("RiskOwnerAcceptance")
+        .orderBy("Created", false)
+        .get();
 
+      const filtereddata = rtp.filter(
+        (m) => Number(m.RiskRequestID) === Number(id)
+      );
       setMaster(req);
       setDetails(det);
-      setRtpDetails(rtp);
+      setRtpDetails(filtereddata);
 
     } catch (e) {
       console.log("LOAD ERROR", e);
@@ -175,16 +205,50 @@ const RiskViewPage: React.FC<Props> = (props) => {
   return (
     <div style={{ padding: 20 }}>
 
-      <h2>Risk No : {master.Title}</h2>
+      <div className="riskViewCard">
 
-      <p><b>Department:</b> {master.Department}</p>
-      <p><b>Asset Owner:</b> {master.AssetOwner?.Title}</p>
+        <h2 className="riskTitle">Risk Request Details</h2>
 
-      <p><b>Information Asset:</b> {master.InformationAsset}</p>
+        <div className="riskFormGrid">
 
-      <p><b>Information Classification:</b> {master.Classification}</p>
-      <p><b>Sharing:</b> {master.Sharing}</p>
-      <p><b>Information Type:</b> {master.InformationType}</p>
+          <div className="riskField">
+            <label>Risk No</label>
+            <div className="riskValue">{master.Title}</div>
+          </div>
+
+          <div className="riskField">
+            <label>Department</label>
+            <div className="riskValue">{master.DepartmentID?.Title}</div>
+          </div>
+
+          <div className="riskField">
+            <label>Asset Owner</label>
+            <div className="riskValue">{master.AssetOwner?.Title}</div>
+          </div>
+
+          <div className="riskField">
+            <label>Information Asset</label>
+            <div className="riskValue">{master.InformationAsset}</div>
+          </div>
+
+          <div className="riskField">
+            <label>Information Classification</label>
+            <div className="riskValue">{master.Classification}</div>
+          </div>
+
+          <div className="riskField">
+            <label>Sharing</label>
+            <div className="riskValue">{master.Sharing}</div>
+          </div>
+
+          <div className="riskField">
+            <label>Information Type</label>
+            <div className="riskValue">{master.InformationType}</div>
+          </div>
+
+        </div>
+
+      </div>
 
       {/* <h3 style={{ marginTop: 20 }}>Risk Details</h3> */}
 
@@ -226,8 +290,20 @@ const RiskViewPage: React.FC<Props> = (props) => {
                 <td>{d.CIAMultipliedValue}</td>
                 <td>{d.Probability}</td>
                 <td>{d.Impact}</td>
-                <td>{d.RiskValue}</td>
-                <td>{d.RiskResponse}</td>
+                <td>{d.RiskValue}</td>   
+
+                <td>                     
+                  <div
+                    style={{
+                      background: exposureColor(Number(d.RiskValue || 0)),
+                      height: "25px",
+                      width: "80px",
+                      borderRadius: "4px",
+                      margin: "auto"
+                    }}
+                  />
+                </td>
+                {/* <td>{d.RiskExposure}</td> */}
                 <td>{d.RiskResponse}</td>
                 <td>{d.RTPDetails}</td>
 
@@ -267,9 +343,22 @@ const RiskViewPage: React.FC<Props> = (props) => {
               {/* ================= CURRENT RISK ================= */}
 
               <div className="popupSectionTitle">Current Risk</div>
+
               <div className="row mb-10">
+
                 <div className="col-md-6 col-sm-12">
+
                   <div className="row">
+
+                    <div className="col-md-6">
+                      <label>Vulnerability</label>
+                      <textarea
+                        className="form-control h-140"
+                        value={selectedRisk?.Vulnerability || ""}
+                        readOnly
+                      />
+                    </div>
+
                     <div className="col-md-6">
                       <label>Risk Description</label>
                       <textarea
@@ -278,7 +367,12 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
-                    <div className="col-md-6">
+
+                  </div>
+
+                  <div className="row mt-2">
+
+                    <div className="col-md-12">
                       <label>Existing Controls</label>
                       <textarea
                         className="form-control h-140"
@@ -286,10 +380,15 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
+
                   </div>
+
                 </div>
+
                 <div className="col-md-6 col-sm-12">
+
                   <div className="row">
+
                     <div className="col-md-1 col-sm-1 w-14">
                       <label>C</label>
                       <input
@@ -298,6 +397,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
+
                     <div className="col-md-1 col-sm-1 w-14">
                       <label>I</label>
                       <input
@@ -306,6 +406,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
+
                     <div className="col-md-1 col-sm-1 w-14">
                       <label>A</label>
                       <input
@@ -314,6 +415,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
+
                     <div className="col-md-1 col-sm-1 w-14">
                       <label>Probability</label>
                       <input
@@ -322,6 +424,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
+
                     <div className="col-md-1 col-sm-1 w-14">
                       <label>Impact</label>
                       <input
@@ -330,27 +433,29 @@ const RiskViewPage: React.FC<Props> = (props) => {
                         readOnly
                       />
                     </div>
+
                     <div className="col-md-1 col-sm-1 w-14">
                       <label>Risk Value</label>
                       <div className="valueBox">
                         {selectedRisk?.RiskValue}
                       </div>
                     </div>
+
                     <div className="col-md-1 col-sm-1 w-14">
-  <label>Risk Exposure</label>
-  <div
-    className="valueBox"
-    style={{
-      background: exposureColor(Number(selectedRisk?.RiskValue || 0))
-    }}
-  >
-    &nbsp;
-  </div>
-</div>
+                      <label>Risk Exposure</label>
+                      <div
+                        className="valueBox"
+                        style={{
+                          background: exposureColor(Number(selectedRisk?.RiskValue || 0))
+                        }}
+                      >
+                        &nbsp;
+                      </div>
+                    </div>
 
                   </div>
-                </div>
 
+                </div>
 
               </div>
 
@@ -446,18 +551,6 @@ const RiskViewPage: React.FC<Props> = (props) => {
               </div>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
               {/* ================= REVISED RISK ================= */}
 
               <div className="popupSectionTitle">Revised Risk</div>
@@ -496,9 +589,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
                       <th>
                         ISO Applicable Controls
                       </th>
-                      <th>
-                        Add
-                      </th>
+
                     </tr>
                   </thead>
                   <tbody>
@@ -619,7 +710,9 @@ const RiskViewPage: React.FC<Props> = (props) => {
                                                                 }}
                                                             /> */}
 
-                        </div>                                            </td>
+                        </div>
+
+                      </td>
                       <td>
                         <input
                           className="form-control"
@@ -648,7 +741,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
               <div className="">
 
                 <div className="historySection">
-                  <h4>Revised History</h4>
+                  {/* <h4>Revised History</h4> */}
                   <div className="popupSectionTitle">Revised History</div>
                   <div className="table-responsive tblbox">
                     <table style={{ border: "1px solid black", width: "100%" }}>

@@ -72,8 +72,10 @@ import { HashRouter as Router, Switch, Route, useLocation } from 'react-router-d
 import type { IScrrdProps } from "./IScrrdProps";
 import Sidebar from '../components/DashBoard/SideBar';
 import RiskRegisterDepartmentDashboard from './DashBoard/RiskRegisterDepartmentDashboard';
-import RiskRequestDetailsForm from './Page/RiskRequestDetailsForm';
+import { RiskRequestDetailsForm } from './Page/RiskRequestDetailsForm';
 import RiskViewPage from './Page/RiskViewPage';
+import ViewDashBoard from './DashBoard/ViewDashBoard';
+
 
 // 👇 Separate Layout Component
 const Layout: React.FC<IScrrdProps> = (props) => {
@@ -93,19 +95,21 @@ const Layout: React.FC<IScrrdProps> = (props) => {
         <Switch>
           <Route exact path="/" render={() => <RiskRegisterDepartmentDashboard {...props} />} />
           <Route exact path="/RiskRequestDetailsForm" render={() => <RiskRequestDetailsForm {...props} />} />
-          <Route exact path="/RiskRequestDetailsForm" render={() => <RiskRequestDetailsForm {...props} />} />
+
+          <Route exact path="/ViewDashBoard" render={() => <ViewDashBoard {...props} />} />
+          {/* <Route exact path="/RiskRequestDetailsForm" render={() => <RiskRequestDetailsForm {...props} />} /> */}
           {/* <Route path="/RiskView/:id"  render={() => <RiskViewPage {...props} />} /> */}
 
 
           <Route
-  path="/RiskView/:id"
-  render={(routeProps) => (
-    <RiskViewPage
-      {...routeProps}
-      currentSPContext={props.currentSPContext}
-    />
-  )}
-/>
+            path="/RiskView/:id"
+            render={(routeProps) => (
+              <RiskViewPage
+                {...routeProps}
+                currentSPContext={props.currentSPContext}
+              />
+            )}
+          />
         </Switch>
       </div>
     </div>

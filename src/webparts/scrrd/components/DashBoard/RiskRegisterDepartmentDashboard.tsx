@@ -20,8 +20,8 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
   const [search, setSearch] = useState("");
 
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  // const [showModal, setShowModal] = useState(false);
+  // const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,82 +35,88 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
   }, []);
 
 
-  const loadData = async () => {
-    try {
 
-      // 🔹 Master list
-      const risks = await web.lists
-        .getByTitle("RiskRequest")
-        .items
-        .select(
-          "Id",
-          "Title",
-          "Department",
-          "Classification",
-          "AssetOwner/Id",
-          "AssetOwner/Title",
-          "AssetOwner/EMail"
-        )
-        .expand("AssetOwner")
-        .orderBy("Created", false)
-        .get();
-
-      // 🔹 Detail list (now using new columns)
-      const details = await web.lists
-        .getByTitle("RiskDetails")
-        .items
-        .select("Id", "RiskRequestID", "RiskValue")
-        .get();
-
-      // 🔁 Merge using Request ID (CORRECT WAY)
-      const mergedData = risks.map(risk => {
-
-
-        const related = details.filter(d => {
-
-          if (!d.RiskRequestID) return false; //  null protection
-        
-          const requestId =
-            typeof d.RiskRequestID === "object"
-              ? d.RiskRequestID.Id
-              : d.RiskRequestID;
-        
-          return Number(requestId) === Number(risk.Id);
-        });
-
-        // sum or take latest — here taking first
-        // const totalRisk = related.length
-        //   ? related.reduce((sum, x) => sum + Number(x.RiskValue || 0), 0)
-        //   : 0;
-
-        // New
-        const totalRisk = related.reduce(
-          (sum, x) => sum + (parseFloat(x.RiskValue) || 0),
-          0
-        );
-
-        return {
-          ...risk,
-          RiskValue: totalRisk
-        };
-      });
-      console.log("Risks:", risks);
-      console.log("Merged:", mergedData);
-
-      setData(mergedData);
-
-    } catch (error) {
-      console.error("DASHBOARD LOAD ERROR:", error);
-    }
+  const getRiskColor = (v: number) => {
+    if (v >= 163) return "#ff0000";   // High Risk - Red
+    if (v >= 82) return "#ffc000";    // Medium Risk - Yellow
+    if (v >= 1) return "#00b050";     // Low Risk - Green
+    return "transparent";
   };
 
+ const loadData = async () => {
+  try {
+
+    const currentUserEmail =
+      props.currentSPContext.pageContext.user.email;
+
+    // ✅ STEP 1: GET DATA
+    const risks = await web.lists
+      .getByTitle("RiskRequest")
+      .items
+      .select(
+        "Id",
+        "Title",
+        "DepartmentID/Id", "DepartmentID/Title",
+        "Classification",
+        "AssetOwner/Id",
+        "AssetOwner/Title",
+        "AssetOwner/EMail"
+      )
+      .expand("AssetOwner", "DepartmentID")
+      .orderBy("Created", false)
+      .get();
+
+    // ✅ STEP 2: FILTER MULTI USER
+    const filteredRisks = risks.filter(r =>
+      r.AssetOwner?.some((u: any) => u.EMail === currentUserEmail)
+    );
+
+    // ✅ STEP 3: GET DETAILS
+    const details = await web.lists
+      .getByTitle("RiskDetails")
+      .items
+      .select("Id", "RiskRequestID", "RiskValue")
+      .get();
+
+    // ✅ STEP 4: MERGE DATA
+    const mergedData = filteredRisks.map(risk => {
+
+      const related = details.filter(d => {
+        if (!d.RiskRequestID) return false;
+
+        const requestId =
+          typeof d.RiskRequestID === "object"
+            ? d.RiskRequestID.Id
+            : d.RiskRequestID;
+
+        return Number(requestId) === Number(risk.Id);
+      });
+
+      const totalRisk = related.reduce(
+        (sum, x) => sum + (parseFloat(x.RiskValue) || 0),
+        0
+      );
+
+      return {
+        ...risk,
+        RiskValue: totalRisk
+      };
+    });
+
+    // ✅ FINAL SET
+    setData(mergedData);
+
+  } catch (error) {
+    console.error("DASHBOARD LOAD ERROR:", error);
+  }
+};
 
   /* ============ SEARCH FILTER ============ */
 
   const filtered = data.filter(item => {
 
     const riskNo = (item.Title || "").toString().toLowerCase();
-    const dept = (item.Department || "").toString().toLowerCase();
+    const dept = (item.DepartmentID || "").toString().toLowerCase();
     const term = search.toLowerCase();
 
     return riskNo.includes(term) || dept.includes(term);
@@ -171,7 +177,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                   className={styles.addBtn}
                   onClick={() => history.push("/RiskRequestDetailsForm")}
                 >
-                  <i className="fa fa-plus" aria-hidden="true"></i> Add Risk
+                  <i className="fa fa-plus" aria-hidden="true">Add Risk</i>
                 </button>
               </div>
             </div>
@@ -185,6 +191,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                   <th>Owner</th>
                   <th>Classification</th>
                   <th>Risk Value</th>
+                  <th>Risk Exposure</th>
                   <th>View</th>
                 </tr>
               </thead>
@@ -193,12 +200,25 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                 {currentItems.map((item, i) => (
                   <tr key={i}>
                     <td>{item.Title}</td>
-                    <td>{item.Department}</td>
-                    {/* <td>{item.AssetOwner.Title}</td> */}
-
-                    <td>{item.AssetOwner?.Title || "-"}</td>
+                    <td>{item.DepartmentID?.Title}</td>
+                    <td>
+                      {item.AssetOwner
+                        ? item.AssetOwner.map((u: any) => u.Title).join(", ")
+                        : "-"}
+                    </td>
                     <td>{item.Classification}</td>
                     <td>{item.RiskValue}</td>
+
+                    {/* COLOR BOX ONLY */}
+                    <td>
+                      <div
+                        className={styles.riskBox}
+                        style={{
+                          backgroundColor: getRiskColor(item.RiskValue)
+                        }}
+                      />
+                    </td>
+
                     <td
                       style={{ cursor: "pointer" }}
                       onClick={() => history.push(`/RiskView/${item.Id}`)}
@@ -266,9 +286,17 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
         </div>
 
         <ul className={`${styles.sidebarMenu} iconmenu`}>
-          <li className={styles.active}><i className="fa fa-dashboard"></i> Department Dashboard</li>
-          <li><i className="fa fa-check-circle" aria-hidden="true"></i> HOD Approval</li>
-          <li><i className="fa fa-check-circle" aria-hidden="true"></i> ISCT Approval</li>
+          <li className={styles.active}>
+            <i className="fa fa-dashboard" /> Department Dashboard
+          </li>
+
+          <li>
+            <i className="fa fa-check-circle" aria-hidden="true" /> View DashBoard
+          </li>
+
+          <li>
+            <i className="fa fa-check-circle" aria-hidden="true" /> ISCT Approval
+          </li>
         </ul>
       </div>
 
@@ -314,7 +342,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
             {currentItems.map((item, i) => (
               <tr key={i}>
                 <td>{item.Title}</td>
-                <td>{item.Department}</td>
+                <td>{item.DepartmentID?.Title}</td>
                 {/* <td>{item.AssetOwnerId}</td> */}
                 <td>{item.AssetOwner?.Title || "-"}</td>
                 <td>{item.Classification}</td>
@@ -329,7 +357,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
             ))}
 
 
-            
+
 
             {currentItems.length === 0 && (
               <tr>

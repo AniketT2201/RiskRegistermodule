@@ -2,5 +2,5 @@
     "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
     "port": 4321,
     "https": true,
-    "initialPage": "https://isriglobal.sharepoint.com/sites/RiskRegister/_layouts/15/workbench.aspx"
+    "initialPage": "https://sonacomstargroup.sharepoint.com/sites/UAT_RiskRegister/_layouts/15/workbench.aspx"
 }

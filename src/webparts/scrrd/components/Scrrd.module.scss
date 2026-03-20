@@ -5,7 +5,6 @@
 .scrrd {
     padding: 0 0 0 0;
     color: var(--bodyText);
-
     &.teams {
         font-family: $ms-font-family-fallbacks;
     }
@@ -34,17 +33,14 @@
 .sidebarMenu {
     list-style: none;
     padding: 10px 0 0 0;
-
     li {
         padding: 12px;
         //margin-bottom: 8px;
         cursor: pointer;
-
         &:hover {
             background: #222;
         }
     }
-
     .active {
         background: #000;
         color: #fff;
@@ -108,12 +104,10 @@
 .table {
     width: 100%;
     border-collapse: collapse;
-
     th {
         padding: 8px;
         border-bottom: 2px solid #ccc;
     }
-
     td {
         padding: 8px;
         border-bottom: 1px solid #eee;
@@ -190,7 +184,6 @@
     display: flex;
     gap: 25px;
     align-items: flex-start;
-
     textarea {
         width: 260px;
         min-height: 80px;
@@ -233,62 +226,48 @@
     #sp-appBar {
         display: none !important;
     }
-
     #spTopPlaceholder {
         display: none !important;
     }
-
     #spLeftNav {
         display: none !important;
     }
-
     #spSiteHeader {
         display: none !important;
     }
-
     #spCommandBar {
         display: none !important;
     }
-
     #CommentsWrapper {
         display: none !important;
     }
-
     div[data-automation-id="pageHeader"] {
         display: none !important;
     }
-
     div[data-automation-id="CanvasZone"] {
         padding: 0px 0px !important;
         max-width: 100% !important;
     }
-
     div[data-automation-id="CanvasSection"] {
         padding-left: 0px !important;
         padding-right: 0px !important;
     }
-
     div[data-automation-id="CanvasControl"] {
         padding: 0px !important;
         margin: 0px !important;
     }
-
     div[data-automation-id="CanvasZone"]>div {
         max-width: 100% !important;
     }
-
     .ms-HubNav {
         display: none !important;
     }
-
     #RecommendedItems {
         display: none !important;
     }
-
     .p_e_50a7110f {
         padding: 0px !important;
     }
-
     #workbenchPageContent {
         max-width: 100% !important;
     }
@@ -385,7 +364,6 @@
         object-fit: contain;
         width: 40px;
     }
-
     .risktitle {
         display: inline;
         padding-left: 15px;
@@ -393,74 +371,59 @@
         font-weight: 600;
         margin-bottom: 30px;
     }
-
     .iconmenu .fa {
         padding-right: 5px;
     }
-
     // #workbenchCommandBar{
     //     display: none;
     // }
     .c_6RhDL_hHQBj {
         padding: 0 !important;
     }
-
     .scrrd_0ba92a70 {
         padding: 0 !important;
     }
-
     .addbtnsection {
         float: right;
         margin-top: 15px;
     }
-
     .submainsection {
         padding-left: 10px;
     }
-
     .scrrd_ebc281d8 {
         padding: 0 20px 0 0;
     }
-
     table th {
         background: linear-gradient(90deg, #3c3e45, #2d2d2d) !important;
         color: #fff !important;
         font-weight: 500;
     }
-
     table th:first-child {
         border-top-left-radius: 5px;
     }
-
     table th:last-child {
         border-top-right-radius: 5px;
     }
-
     table tr:nth-child(even) {
         background: #fefefe;
     }
-
     table tr:nth-child(odd) {
         background: #f5f5f5;
     }
-
     table td {
         padding: 10px 8px !important;
         border-bottom: 2px solid #fff;
     }
-
     table th {
         border-bottom: none !important;
         padding: 10px 8px !important;
         white-space: nowrap;
     }
-
     .pgbtn {
         padding: 3px 10px !important;
         border: 1px solid #000 !important;
         border-radius: 4px;
     }
-
     .requestdetailstitle {
         background: linear-gradient(90deg, #3c3e45, #2d2d2d);
         ;
@@ -471,25 +434,20 @@
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
     }
-
     .requestdetailsection label {
         margin-bottom: 5px;
         font-weight: 600;
     }
-
     .pb-10 {
         padding-bottom: 10px;
     }
-
     .fa-pencil-square-o,
     .fa-times {
         color: #fff !important;
     }
-
     .text-right {
         text-align: right;
     }
-
     .exitbtn {
         background: #777 !important;
         border: none;
@@ -498,7 +456,6 @@
         padding: 8px 16px;
         width: auto !important;
     }
-
     .savebtn {
         background: #000 !important;
         border: none;
@@ -507,7 +464,6 @@
         padding: 8px 16px;
         width: auto !important;
     }
-
     .editbtn {
         padding: 8px 0 !important;
         width: 60px !important;
@@ -517,47 +473,37 @@
         cursor: pointer;
         border: 1px solid #777 !important;
     }
-
     .form-control:focus {
         background-color: var(--bs-body-bg);
         border-color: #777;
         box-shadow: none !important;
     }
-
     button {
         border-radius: 3px !important;
     }
-
     .h-171 {
         height: 171px !important;
     }
-
     .exitcontrolbox {
         width: 300px !important;
         min-height: 171px !important;
         height: auto !important;
     }
-
     .CanvasZoneSectionContainer {
         padding: 0 !important;
     }
-
     .w-60 {
         width: 60px !important;
     }
-
     .plr-10 {
         padding: 0 10px !important;
     }
-
     requestdetailsection {
         padding: 10px 10px 0 10px !important;
     }
-
     .pl-13 {
         padding: 0 13px !important;
     }
-
     //  for popup
     .modalOverlay {
         align-items: center;
@@ -570,7 +516,6 @@
         margin: auto;
         width: 100%;
     }
-
     .modalBoxLarge {
         background: #fff;
         padding: 0;
@@ -580,40 +525,33 @@
         margin: auto;
         margin-top: 10px;
     }
-
     .popupSectionTitle {
         font-weight: 700;
         padding: 0 0 5px 0;
         border-bottom: 1px solid #777;
         margin-bottom: 8px;
     }
-
     .popupRow {
         display: flex;
         gap: 10px;
     }
-
     .popupField {
         flex: 1;
     }
-
     .popupGrid6 {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
         gap: 10px;
     }
-
     .popupButtons {
         margin-top: 15px;
         text-align: right;
     }
-
     .valueBox {
         padding: 6px;
         background: #f1f1f1;
         height: 38px;
     }
-
     .popupbox h3 {
         background: #000;
         text-align: center;
@@ -623,7 +561,6 @@
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
     }
-
     .popupinnerbox {
         padding: 0 20px;
         height: 500px;
@@ -631,29 +568,23 @@
         overflow-y: auto;
         margin-bottom: 10px;
     }
-
     .h-140 {
         height: 140px !important;
     }
-
     .w-14 {
         width: 14% !important;
         padding: 0 !important;
     }
-
     .w-14 .form-control {
         border-radius: 0 !important;
     }
-
     .w-14 label {
         white-space: nowrap;
     }
-
     .editdatatable th:first-child,
     .editdatatable th:last-child {
         border-radius: 0 !important;
     }
-
     .editdatatable th {
         background: #fff !important;
         border: 1px solid #000 !important;
@@ -663,13 +594,11 @@
         white-space: normal;
         vertical-align: middle;
     }
-
     .editdatatable td {
         border: 1px solid #000 !important;
         text-align: center;
         padding: 0 8px !important;
     }
-
     .editdatatable input {
         text-align: center;
         vertical-align: bottom;
@@ -677,21 +606,15 @@
         border: none !important;
         padding: 8px 0 0 0;
     }
-
     .mb-10 {
         margin-bottom: 10px !important;
     }
-
     .tblbox th {
         white-space: normal !important;
     }
 }
 
-
-
 //new code add of the owner name////////////////////
-
-
 .riskActionSection {
     display: grid;
     grid-template-columns: 180px 1fr;
@@ -720,34 +643,71 @@
     grid-column: span 1;
 }
 
-
 :global {
-
     #contentBox {
         margin-right: 0px !important;
         margin-left: 0px !important;
     }
-
     #contentRow {
         padding-top: 0px !important;
     }
-
     #titleAreaBox {
         margin: auto 20px;
         display: none !important;
     }
-
     #s4-titlerow {
         display: none !important;
     }
-
     #sideNavBox,
-    #s4-ribbonrow,#WebPartTitleWPQ5 {
+    #s4-ribbonrow,
+    #WebPartTitleWPQ5 {
         display: none !important;
     }
+    // this code use for the ui of view form//
+    .riskViewCard {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+    }
+    .riskTitle {
+        font-size: 22px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    .riskFormGrid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    .riskField label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #555;
+        display: block;
+        margin-bottom: 5px;
+    }
+    .riskValue {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
 
+.riskBox {
+    color: white;
+    padding: 6px;
+    text-align: center;
+    border-radius: 4px;
+    font-weight: 600;
+}
 
-
-
-    
+.riskBox {
+    height: 25px;
+    width: 80px;
+    border-radius: 4px;
+    margin: auto;
 }
