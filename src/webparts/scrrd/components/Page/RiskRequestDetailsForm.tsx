@@ -534,7 +534,7 @@ export const RiskRequestDetailsForm: React.FC<IScrrdProps> = (props) => {
                         Title: "RTP_" + Date.now(),
                         Vulnerability: r.vulnerability || null,
                         ExistingControls: r.existingControls || null,
-
+                        RiskRequestID: r.sharePointItemId || null,
 
                         RevisedC: h.revisedC?.toString() || null,
                         RevisedI: h.revisedI?.toString() || null,
@@ -763,6 +763,7 @@ export const RiskRequestDetailsForm: React.FC<IScrrdProps> = (props) => {
                     // ✅ Other fields
                     RTPDetails: r.riskTreatmentPlan || "",
                     Timeline: r.timeline || "",
+                    
 
                     // AssetOwnerId: r.assetOwnerId || null,
 
@@ -994,7 +995,7 @@ export const RiskRequestDetailsForm: React.FC<IScrrdProps> = (props) => {
                                         </select>
                                     </td>
 
-                                    <button
+                                    {/* <button
                                         className="editbtn"
                                         onClick={() => {
                                             setSelectedRowIndex(i);
@@ -1002,7 +1003,7 @@ export const RiskRequestDetailsForm: React.FC<IScrrdProps> = (props) => {
                                         }}
                                     >
                                         <i className="fa fa-pencil" /> Edit
-                                    </button>
+                                    </button> */}
 
 
 

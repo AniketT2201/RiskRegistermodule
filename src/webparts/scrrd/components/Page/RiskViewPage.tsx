@@ -125,7 +125,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
           "InformationAsset",
           "Sharing",
           "InformationType",
-          "AssetOwner/Title"
+          "AssetOwner/Title,AssetOwner/Id"
         )
         .expand("DepartmentID", "AssetOwner")
         .get();
@@ -138,6 +138,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
         .filter(`RiskRequestID eq ${id}`)
         .select(
           "Id",
+          "RiskRequestID",
           "Vulnerability",
           "RiskDescription",
           "ExistingControls",
@@ -164,6 +165,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
         .items
         .select(
           "Id",
+          "RiskRequestID",
           "RevisedC",
           "RevisedI",
           "RevisedA",
@@ -223,7 +225,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
 
           <div className="riskField">
             <label>Asset Owner</label>
-            <div className="riskValue">{master.AssetOwner?.Title}</div>
+            <div className="riskValue">{master.AssetOwner?.[0]?.Title}</div>
           </div>
 
           <div className="riskField">

@@ -25,7 +25,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    const itemsPerPage = 10;
 
     // ✅ PnP v2 web instance
     const web = Web(props.currentSPContext.pageContext.web.absoluteUrl);

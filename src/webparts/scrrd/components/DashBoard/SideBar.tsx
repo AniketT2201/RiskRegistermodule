@@ -22,7 +22,7 @@ const Sidebar: React.FC<IScrrdProps> = (props) => {
                         to="/"
                         className={`nav-link ${location.pathname === "/" ? "active" : ""}`}
                     >
-                        Department Dashboard
+                        Request Dashboard
                     </Link>
                 </li>
 
@@ -35,14 +35,14 @@ const Sidebar: React.FC<IScrrdProps> = (props) => {
                     </Link>
                 </li>
 
-                <li className="nav-item">
+                {/* <li className="nav-item">
                     <Link
                         to="/isct-approval"
                         className={`nav-link ${location.pathname === "/isct-approval" ? "active" : ""}`}
                     >
                         ISCT Approval
                     </Link>
-                </li>
+                </li> */}
             </ul>
         </div>
     );

@@ -75,6 +75,7 @@ import RiskRegisterDepartmentDashboard from './DashBoard/RiskRegisterDepartmentD
 import { RiskRequestDetailsForm } from './Page/RiskRequestDetailsForm';
 import RiskViewPage from './Page/RiskViewPage';
 import ViewDashBoard from './DashBoard/ViewDashBoard';
+import RiskEditPage from './Page/RiskEditPage';
 
 
 // 👇 Separate Layout Component
@@ -105,6 +106,15 @@ const Layout: React.FC<IScrrdProps> = (props) => {
             path="/RiskView/:id"
             render={(routeProps) => (
               <RiskViewPage
+                {...routeProps}
+                currentSPContext={props.currentSPContext}
+              />
+            )}
+          />
+          <Route
+            path="/RiskEdit/:id"
+            render={(routeProps) => (
+              <RiskEditPage
                 {...routeProps}
                 currentSPContext={props.currentSPContext}
               />

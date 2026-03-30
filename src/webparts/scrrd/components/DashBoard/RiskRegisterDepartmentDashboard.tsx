@@ -25,7 +25,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   // ✅ PnP v2 web instance
   const web = Web(props.currentSPContext.pageContext.web.absoluteUrl);
@@ -193,6 +193,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                   <th>Risk Value</th>
                   <th>Risk Exposure</th>
                   <th>View</th>
+                  <th>Edit</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,6 +225,12 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                       onClick={() => history.push(`/RiskView/${item.Id}`)}
                     >
                       👁
+                    </td>
+                    <td
+                      style={{ cursor: "pointer" }}
+                      onClick={() => history.push(`/RiskEdit/${item.Id}`)}
+                    >
+                      ✏️
                     </td>
                   </tr>
                 ))}
