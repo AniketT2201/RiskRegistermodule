@@ -61,7 +61,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                 )
                 .expand("AssetOwner", "DepartmentID")
                 .orderBy("Created", false)
-                .get();
+                .getAll();
             console.log(risks);
 
             // 🔹 Detail list (now using new columns)
@@ -69,7 +69,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
                 .getByTitle("RiskDetails")
                 .items
                 .select("Id", "RiskRequestID", "RiskValue")
-                .get();
+                .getAll();
 
             // 🔁 Merge using Request ID (CORRECT WAY)
             const mergedData = risks.map(risk => {

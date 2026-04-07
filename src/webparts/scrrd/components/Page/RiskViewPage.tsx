@@ -156,7 +156,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
           "Responsibility/Title"
         )
         .expand("RiskOwner", "Responsibility")
-        .get();
+        .getAll();
 
 
 
@@ -180,7 +180,7 @@ const RiskViewPage: React.FC<Props> = (props) => {
         )
         .expand("RiskOwnerAcceptance")
         .orderBy("Created", false)
-        .get();
+        .getAll();
 
       const filtereddata = rtp.filter(
         (m) => Number(m.RiskRequestID) === Number(id)

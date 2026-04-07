@@ -64,7 +64,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
       )
       .expand("AssetOwner", "DepartmentID")
       .orderBy("Created", false)
-      .get();
+      .getAll();
 
     // ✅ STEP 2: FILTER MULTI USER
     const filteredRisks = risks.filter(r =>
@@ -76,7 +76,7 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
       .getByTitle("RiskDetails")
       .items
       .select("Id", "RiskRequestID", "RiskValue")
-      .get();
+      .getAll();
 
     // ✅ STEP 4: MERGE DATA
     const mergedData = filteredRisks.map(risk => {
