@@ -380,32 +380,42 @@ const RiskRegisterDepartmentDashboard: React.FC<Props> = (props) => {
         {/* PAGINATION */}
 
         <div className={styles.pagination}>
-
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(p => p - 1)}
+          {/* Prev */}
+          <button className="pgbtn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => p - 1)}
           >
-            Prev
+              Prev
           </button>
 
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              className={currentPage === i + 1 ? styles.activePage : ""}
-              onClick={() => setCurrentPage(i + 1)}
-            >
-              {i + 1}
-            </button>
-          ))}
+          {/* Previous page number */}
+          {currentPage > 1 && (
+              <button className="pgbtn" onClick={() => setCurrentPage(currentPage - 1)}>
+              {currentPage - 1}
+              </button>
+          )}
 
-          <button
-            disabled={currentPage === totalPages || totalPages === 0}
-            onClick={() => setCurrentPage(p => p + 1)}
-          >
-            Next
+          {/* Current page */}
+          <button className={`pgbtn ${styles.activePage}`}>
+              {currentPage}
           </button>
 
-        </div>
+          {/* Next page number */}
+          {currentPage < totalPages && (
+              <button className="pgbtn" onClick={() => setCurrentPage(currentPage + 1)}>
+              {currentPage + 1}
+              </button>
+          )}
+
+          {/* Next */}
+          <button className="pgbtn"
+              disabled={currentPage === totalPages || totalPages === 0}
+              onClick={() => setCurrentPage(p => p + 1)}
+          >
+              Next
+          </button>
+
+      </div>
 
       </div>
     </div>
